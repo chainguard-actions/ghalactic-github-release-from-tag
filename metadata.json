@@ -1,0 +1,7 @@
+{
+  "owner": "ghalactic",
+  "name": "github-release-from-tag",
+  "visibility": "internal",
+  "description": "Publish GitHub releases from tags, supporting Markdown and SemVer",
+  "block_publish": false
+}

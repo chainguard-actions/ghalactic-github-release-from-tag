@@ -1,1 +1,15 @@
-# github-release-from-tag
+# ghalactic/github-release-from-tag
+
+Publish GitHub releases from tags, supporting Markdown and SemVer
+
+Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at [https://github.com/ghalactic/github-release-from-tag](https://github.com/ghalactic/github-release-from-tag).
+
+## Versions
+
+| Version | Tag | Upstream commit |
+|---------|-----|-----------------|
+| v5.4.0 | [`v5.4.0`](https://github.com/chainguard-actions/github-release-from-tag/tree/v5.4.0) | — |
+
+## Privacy
+
+This Action contacts Chainguard's licensing server to verify authorization. Connection metadata (IP address, GitHub repository identifier, timestamp, and any metadata encoded in the auth token) is transmitted to Chainguard, Inc. even if authorization is denied in accordance with our [Privacy Notice](https://www.chainguard.dev/legal/privacy-notice)

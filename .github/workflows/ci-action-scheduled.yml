@@ -1,0 +1,14 @@
+name: CI (scheduled)
+
+on:
+  schedule:
+    - cron: 0 14 * * 0 # Sunday 2PM UTC = Monday 12AM AEST
+
+jobs:
+  ci:
+    name: Ghalactic
+    permissions: {}
+    uses: ghalactic/repos/.github/workflows/shared-ci-action.yml@043a734b4fc560617a6f9448e1532ae02b397321 # main
+    secrets: inherit
+    with:
+      isScheduled: true

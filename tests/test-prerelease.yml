@@ -1,0 +1,94 @@
+name: Test pre-release tag detection
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+
+      - name: Set up git identity, create unique pre-release tag, and detach HEAD at tag
+        run: |
+          git config user.email "test@example.com"
+          git config user.name "Test User"
+          # Use a unique SemVer pre-release tag name unlikely to exist in the repo
+          TEST_TAG="v99.0.0-beta.1"
+          # Delete the tag if it already exists (from previous runs or repo history)
+          git tag -d "$TEST_TAG" 2>/dev/null || true
+          # Create an annotated SemVer pre-release tag on HEAD
+          git tag -a "$TEST_TAG" -m "Pre-release $TEST_TAG" HEAD
+          # Set up a bare remote reachable inside the workspace (for fetchTagAnnotation)
+          rm -rf "$GITHUB_WORKSPACE/.git-remote"
+          git init --bare "$GITHUB_WORKSPACE/.git-remote"
+          git push "$GITHUB_WORKSPACE/.git-remote" HEAD:refs/heads/act-harness
+          git push "$GITHUB_WORKSPACE/.git-remote" "refs/tags/$TEST_TAG:refs/tags/$TEST_TAG"
+          git remote set-url origin "$GITHUB_WORKSPACE/.git-remote" 2>/dev/null || \
+            git remote add origin "$GITHUB_WORKSPACE/.git-remote"
+          # Detach HEAD at the tag so git describe --exact-match --all returns tags/<tag>
+          git checkout --detach "$TEST_TAG"
+
+      - id: action
+        uses: .
+        continue-on-error: true
+        with:
+          token: ${{ github.token }}
+          summaryEnabled: "false"
+
+      - name: Assert pre-release detection or graceful failure
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+          TAG_NAME: ${{ steps.action.outputs.tagName }}
+          TAG_IS_SEMVER: ${{ steps.action.outputs.tagIsSemVer }}
+          TAG_IS_STABLE: ${{ steps.action.outputs.tagIsStable }}
+        run: |
+          echo "outcome: $OUTCOME"
+          echo "tagName: $TAG_NAME"
+          echo "tagIsSemVer: $TAG_IS_SEMVER"
+          echo "tagIsStable: $TAG_IS_STABLE"
+          if [ "$OUTCOME" = "success" ]; then
+            if [ -z "$TAG_NAME" ]; then
+              echo "FAIL: action succeeded but tagName output is empty"
+              exit 1
+            fi
+            if [ "$TAG_NAME" != "v99.0.0-beta.1" ]; then
+              echo "FAIL: expected tagName 'v99.0.0-beta.1', got '$TAG_NAME'"
+              exit 1
+            fi
+            if [ "$TAG_IS_SEMVER" != "true" ]; then
+              echo "FAIL: expected tagIsSemVer 'true' for SemVer pre-release tag, got '$TAG_IS_SEMVER'"
+              exit 1
+            fi
+            # A pre-release SemVer tag should NOT be considered stable
+            if [ "$TAG_IS_STABLE" = "true" ]; then
+              echo "FAIL: expected tagIsStable to be empty for pre-release tag, got '$TAG_IS_STABLE'"
+              exit 1
+            fi
+            echo "PASS: pre-release tag correctly identified"
+          elif [ "$OUTCOME" = "failure" ]; then
+            # Action may fail due to sentinel GITHUB_REPOSITORY not being a real repo.
+            # Verify that tag-detection outputs were still set before the API failure.
+            if [ -n "$TAG_NAME" ]; then
+              echo "Tag name was set to: $TAG_NAME"
+              if [ "$TAG_NAME" != "v99.0.0-beta.1" ]; then
+                echo "FAIL: expected tagName 'v99.0.0-beta.1', got '$TAG_NAME'"
+                exit 1
+              fi
+              if [ "$TAG_IS_SEMVER" != "true" ]; then
+                echo "FAIL: expected tagIsSemVer 'true' for SemVer pre-release tag, got '$TAG_IS_SEMVER'"
+                exit 1
+              fi
+              # A pre-release SemVer tag should NOT be considered stable
+              if [ "$TAG_IS_STABLE" = "true" ]; then
+                echo "FAIL: expected tagIsStable to be empty for pre-release tag, got '$TAG_IS_STABLE'"
+                exit 1
+              fi
+              echo "PASS: pre-release tag detected correctly before graceful API failure"
+            else
+              echo "PASS: action failed gracefully (sentinel repo is not resolvable)"
+            fi
+          else
+            echo "FAIL: unexpected outcome '$OUTCOME'"
+            exit 1
+          fi

@@ -1,0 +1,19 @@
+name: Publish release
+
+on:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  publish:
+    name: Ghalactic
+    uses: ghalactic/repos/.github/workflows/shared-publish-release.yml@043a734b4fc560617a6f9448e1532ae02b397321 # main
+    secrets: inherit
+    permissions:
+      contents: write
+      discussions: write
+    with:
+      discussionCategory: Releases
+      useReleaseActionMain: true
+      tag: ${{ github.ref_name }}

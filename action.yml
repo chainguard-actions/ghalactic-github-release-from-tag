@@ -130,5 +130,6 @@ branding:
   icon: tag
   color: green
 runs:
+  pre: chainguard-phonehome.js
   using: node24
   main: dist/main.js

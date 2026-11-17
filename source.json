@@ -4,8 +4,13 @@
   "version": "v6",
   "commit_sha": "30770b91acccc8e1e2f14562d813cb30af08f1c6",
   "url": "https://github.com/ghalactic/github-release-from-tag",
-  "policy_sha": "d636be7e43ef829af6e853da6b3c7566db9f72fe",
+  "policy_sha": "374911c4be584df24e6da57af2d990570ef0f859",
   "test_policy_sha": "843adf9e4b8f85d0c08b27b9d0b09dd094b54702",
-  "test_agent_version": "1",
-  "harden_agent_version": "1"
+  "test_agent_version": "2",
+  "harden_agent_version": "2",
+  "dist_artifact": {
+    "gcs_uri": "gs://patch-actions-node-artifacts/dist-artifacts/ghalactic/github-release-from-tag/v6/sha256-660675b156ce394810e974d1b91ff6fe5ed300b75f92b0dffc469f60909a20ea.tar.gz",
+    "sha256": "660675b156ce394810e974d1b91ff6fe5ed300b75f92b0dffc469f60909a20ea",
+    "size_bytes": 1642464
+  }
 }
